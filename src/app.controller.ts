@@ -17,6 +17,10 @@ export class AppController {
   getLove(): string {
     return this.appService.getLove();
   }
+  @Get('/mesmerizer')
+  getMesmerizer(): string {
+    return this.appService.getMesmerizer();
+  }
   @Get('/json')
   getJson(): object {
     return this.appService.getJson();

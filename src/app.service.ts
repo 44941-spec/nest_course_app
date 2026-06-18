@@ -18,7 +18,8 @@ export class AppService {
     return {
       name: 'Mahino',
       surname: 'Douka',
-      age: 30e24
+      age: 30e24,
+      version : process.env.API_VERSION,
     }
   }
 }

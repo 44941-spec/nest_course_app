@@ -9,6 +9,20 @@ generator client {
   moduleFormat = "cjs"
 }
 
+generator nestjsDto {
+  provider                         = "prisma-generator-nestjs-dto"
+  output                           = "../src/generated/nestjs-dto"
+  outputToNestJsResourceStructure  = "true"
+  flatResourceStructure            = "false"
+  exportRelationModifier           = "false"
+  reExport                         = "true"
+  createDtoPrefix                  = "create"
+  updateDtoPrefix                  = "update"
+  dtoSuffix                        = "Dto"
+  entityPrefix                     = ""
+  entitySuffix                     = ""
+}
+
 datasource db {
   provider = "postgresql"
 }

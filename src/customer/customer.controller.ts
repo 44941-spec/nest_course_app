@@ -32,13 +32,29 @@ export class CustomerController {
     );
   }
 
+  @Get('byEmail/:email')
+  async findByEmail(@Param('email') email: string): Promise<Customer | null> {
+    return this.prismaService.customer.findUnique(
+      {
+        where: {
+          email: email,
+        }
+      }
+    );
+  }
+
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateCustomerDto: UpdateCustomerDto) {
-    //return this.customerService.update(+id, updateCustomerDto);
+    return this.prismaService.customer.update({
+      where: {id: Number(id)},
+      data: updateCustomerDto
+    });
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    //return this.customerService.remove(+id);
+    return this.prismaService.customer.delete({
+      where: {id: Number(id)}
+    });
   }
 }

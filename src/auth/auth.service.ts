@@ -1,4 +1,5 @@
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma.service';
 import { User } from '../generated/prisma/client';
@@ -8,7 +9,10 @@ import { SignInDto } from './dto/signin.dto';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prismaService: PrismaService) { }
+  constructor(
+    private readonly prismaService: PrismaService,
+    private jwtService: JwtService
+  ) { }
 
   async signUp(userData: CreateUserDto) {
     const existedUser = await this.prismaService.user.findUnique({
@@ -35,15 +39,33 @@ export class AuthService {
   }
 
   async signIn(signInData: SignInDto) {
-  const user = await this.prismaService.user.findUnique({
-    where: {
-      username: signInData.username
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        username: signInData.username
+      }
+    });
+    const authorized = (!user) ? false : await bcrypt.compare(signInData.password, user.password);
+    if (!authorized) {
+      throw new UnauthorizedException('wrong credential');
     }
-  });
-  const authorized = (!user) ? false : await bcrypt.compare(signInData.password, user.password);
-  if (!authorized) {
-    throw new UnauthorizedException('wrong credential');
-  }
   // TODO: generate JWT token
-}
+    const payload = { username: user?.username };
+    const token = await this.jwtService.signAsync(payload, {
+      secret: process.env.JWT_SECRET_KEY
+    });
+    return { access_token: token };
+  }
+
+  async getProfile(username: string) {
+    const profile = await this.prismaService.user.findUnique({
+      where: {
+        username: username
+      },
+      omit: {
+        password: true,
+      }
+    });
+    
+    return profile;
+  }
 }

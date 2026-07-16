@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Request, HttpCode, UseGuards } from '@nestjs/common';
 import { hash,genSalt } from 'bcrypt';
 import { AuthService } from './auth.service';
 import { PrismaService } from 'src/prisma.service';
@@ -6,6 +6,7 @@ import { User } from '../generated/prisma/client';
 import { CreateUserDto } from '../generated/nestjs-dto/user/dto/create-user.dto';
 import { UpdateUserDto } from '../generated/nestjs-dto/user/dto/update-user.dto';
 import { SignInDto } from './dto/signin.dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller({
   path: 'auth',
@@ -27,6 +28,12 @@ export class AuthController {
   @HttpCode(200)
   async login(@Body() signInData: SignInDto) {
     return await this.authService.signIn(signInData);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async getProfile(@Request() req: any) {
+    return await this.authService.getProfile(req.user.username);
   }
 /*
   @Get()

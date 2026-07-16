@@ -1,29 +1,34 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode } from '@nestjs/common';
 import { hash,genSalt } from 'bcrypt';
 import { AuthService } from './auth.service';
 import { PrismaService } from 'src/prisma.service';
 import { User } from '../generated/prisma/client';
 import { CreateUserDto } from '../generated/nestjs-dto/user/dto/create-user.dto';
 import { UpdateUserDto } from '../generated/nestjs-dto/user/dto/update-user.dto';
+import { SignInDto } from './dto/signin.dto';
 
-@Controller('auth')
+@Controller({
+  path: 'auth',
+  version: '1',
+})
 export class AuthController {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly authService: AuthService
+  ) {}
 
-  @Post()
-  async create(@Body() userData: CreateUserDto): Promise<User> {
-    const salt = await genSalt(12);
-    const hashPasword = await hash(userData.password, salt);
-
-    return this.prismaService.user.create({
-      data : {
-        username: userData.username,
-        email: userData.email,
-        password: hashPasword
-      }
-    });
+  @Post('signup')
+  @HttpCode(201)
+  async create(@Body() userData: CreateUserDto): Promise<User | any> {
+    await this.authService.signUp(userData);
+    return { message: "registration success" };
   }
 
+  @Post('signin')
+  @HttpCode(200)
+  async login(@Body() signInData: SignInDto) {
+    return await this.authService.signIn(signInData);
+  }
+/*
   @Get()
   async findAll(): Promise<User[]> {
     return this.prismaService.user.findMany();
@@ -35,4 +40,5 @@ export class AuthController {
         where: {username: username }
     });
   }
+*/
 }
